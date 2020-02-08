@@ -28,6 +28,7 @@ public class StopWatchAct extends AppCompatActivity {
     float rotationOffset = 32;
     int minutes;
     long elapsedMillis;
+    long milliseconds;
 
     private float getRotationAngle(float minutes, long elapsedMillis) {
         System.out.println("mins: " + minutes + " elapsedmills: " + elapsedMillis);
@@ -42,7 +43,7 @@ public class StopWatchAct extends AppCompatActivity {
         Intent a = getIntent();
         minutes = a.getIntExtra("minutes", 0);
         int seconds = minutes * 60;
-        int milliseconds = seconds * 1000;
+        milliseconds = seconds * 1000;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stop_watch);
         btnstop = findViewById(R.id.btnStop);
@@ -124,19 +125,10 @@ public class StopWatchAct extends AppCompatActivity {
         timeHere.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             @Override
             public void onChronometerTick(Chronometer chronometer) {
-                String currentTime= timeHere.getText().toString();
 
-                long hours = TimeUnit.MINUTES.toHours(Long.valueOf(minutes));
-                long remainMinutes = minutes - TimeUnit.HOURS.toMinutes(hours);
-                String newtime;
-                if (hours > 0){
-                    newtime = String.format("%02d:%02d:00", hours, remainMinutes);
-                }
-                else{
-                    newtime = String.format("%02d:00", remainMinutes);
-                }
+                long elapsedMillis = SystemClock.elapsedRealtime() - timeHere.getBase();
 
-                if(currentTime.equals(newtime)) //put time according to you
+                if(elapsedMillis >= milliseconds)
                 {
                     timeHere.stop();
                     timeHere.setTextColor(Color.parseColor("#FF769A"));
@@ -145,15 +137,12 @@ public class StopWatchAct extends AppCompatActivity {
                     float rotationAngle = getRotationAngle(minutes, elapsedMillis);
                     icanchor.setRotation(rotationAngle + rotationOffset);
                     bgcircle.setColorFilter( 0xffff0000, PorterDuff.Mode.MULTIPLY );
-
                     Intent a = new Intent(StopWatchAct.this, End.class);
                     a.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                    a.putExtra("time", newtime);
+                    a.putExtra("time", timeHere.getText().toString());
                     startActivity(a);
                     overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                     StopWatchAct.this.finish();
-
-
                 }
             }
         });
